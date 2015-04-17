@@ -105,10 +105,14 @@ public class MainActivity extends ActionBarActivity {
         sndMessage.put("lay down","n");
         sndMessage.put("fight","o");
         sndMessage.put("push up","p");
-        sndMessage.put("1 hand","q");
+        sndMessage.put("push up 1","q");
         sndMessage.put("hand (d)","r");
         sndMessage.put("dance1","s");
         sndMessage.put("dance2","t");
+        sndMessage.put("back","u");
+        sndMessage.put("<----","v");
+        sndMessage.put("---->","w");
+
 
         try {
             System.out.println("Starting.....");
@@ -421,43 +425,6 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void leftclick(View view){
-        Button b = (Button)view;
-        String buttonText = b.getText().toString();
-        if (buttonText!=null){
-            buttonText = buttonText.toLowerCase();
-            String dd = (String)sndMessage.get(buttonText);
-            if (dd!=null){
-                sendMessage(dd);
-            }
-        }
-    }
-
-
-    public void fromfront(View view){
-        Button b = (Button)view;
-        String buttonText = b.getText().toString();
-        if (buttonText!=null){
-            buttonText = buttonText.toLowerCase();
-            String dd = (String)sndMessage.get(buttonText);
-            if (dd!=null){
-                sendMessage(dd);
-            }
-        }
-    }
-
-    public void fromback(View view){
-        Button b = (Button)view;
-        String buttonText = b.getText().toString();
-        if (buttonText!=null){
-            buttonText = buttonText.toLowerCase();
-            String dd = (String)sndMessage.get(buttonText);
-            if (dd!=null){
-                sendMessage(dd);
-            }
-        }
-    }
-
     public void laydown(View view){
         Button b = (Button)view;
         String buttonText = b.getText().toString();
@@ -520,6 +487,43 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void dance2(View view){
+        Button b = (Button)view;
+        String buttonText = b.getText().toString();
+        if (buttonText!=null){
+            buttonText = buttonText.toLowerCase();
+            String dd = (String)sndMessage.get(buttonText);
+            if (dd!=null){
+                sendMessage(dd);
+            }
+        }
+    }
+
+    public void backwalk(View view){
+        Button b = (Button)view;
+        String buttonText = b.getText().toString();
+        if (buttonText!=null){
+            buttonText = buttonText.toLowerCase();
+            String dd = (String)sndMessage.get(buttonText);
+            if (dd!=null){
+                sendMessage(dd);
+            }
+        }
+    }
+
+    public void seeleft(View view){
+        Button b = (Button)view;
+        String buttonText = b.getText().toString();
+        if (buttonText!=null){
+            buttonText = buttonText.toLowerCase();
+            String dd = (String)sndMessage.get(buttonText);
+            if (dd!=null){
+                sendMessage(dd);
+            }
+        }
+    }
+
+
+    public void seeright(View view){
         Button b = (Button)view;
         String buttonText = b.getText().toString();
         if (buttonText!=null){
