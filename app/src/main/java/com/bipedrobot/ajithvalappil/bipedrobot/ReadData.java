@@ -32,11 +32,8 @@ public class ReadData extends Thread{
                 int i;
                 char c;
                 inpMsg = "";
-                while (btSocket!=null && btSocket.isConnected() && inStream!=null && (i=inStream.read())!=-1){ //Check if there is an available byte to read
+                if (btSocket!=null && btSocket.isConnected() && inStream!=null && (i=inStream.read())!=-1){ //Check if there is an available byte to read
                     c = (char)i; //Conduct a serial read
-                    if (c=='#'){
-                        break;
-                    }
                     inpMsg = inpMsg.concat(String.valueOf(c));
                 }
                 if (btSocket.isConnected() && inpMsg!=null && !"".equals(inpMsg)){

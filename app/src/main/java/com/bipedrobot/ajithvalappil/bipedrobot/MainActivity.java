@@ -32,8 +32,11 @@ public class MainActivity extends ActionBarActivity {
 
     private Spinner spinner;
     static List<String> items = new ArrayList<String>();
+    List<String> commands = new ArrayList<String>();
+    String lastCommand = "f";
     static final String[]blueDevices = {"item 1", "item 2", "item 3"};
     ArrayAdapter<String> adapter;
+    TableLayout tableLayout;
 
     BluetoothController aBluetoothController = new BluetoothController();
     public BluetoothAdapter btAdapter = null;
@@ -46,6 +49,7 @@ public class MainActivity extends ActionBarActivity {
     Button connectBlu;
     static final int REQUEST_ENABLE_BT = 0;
     HashMap<String, String> sndMessage = new HashMap<String, String>();
+    static boolean stillProcessing = false;
 
     Handler handler = new Handler() {
         @Override
@@ -84,12 +88,14 @@ public class MainActivity extends ActionBarActivity {
 
         spinner = (Spinner)findViewById(R.id.spinner);
         connectBlu=(Button)findViewById(R.id.button);
+        tableLayout=(TableLayout)findViewById(R.id.tableLayout);
+
         items.add("Select Bluetooth");
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
-        sndMessage.put("welcome","a");
+        sndMessage.put("welcome", "a");
         sndMessage.put("salute","b");
         sndMessage.put("sit dance","c");
         sndMessage.put("stay still","d");
@@ -110,6 +116,7 @@ public class MainActivity extends ActionBarActivity {
         sndMessage.put("dance1","s");
         sndMessage.put("dance2","t");
         sndMessage.put("back","u");
+        sndMessage.put("get up from fall","m");
         sndMessage.put("<----","v");
         sndMessage.put("---->","w");
 
@@ -251,16 +258,55 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void sendMessage(String message){
+        Toast.makeText(this, "Sending..." + message, Toast.LENGTH_SHORT).show();
+        sendMessageViaBluetooth(message);
+    }
 
+
+
+    public void sendMessageViaBluetooth(final String message){
+
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+
+                HashMap<String, String> commandToBeTriggered = validCommands(message);
+
+                if (commandToBeTriggered!=null){
+                    Iterator it = commandToBeTriggered.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pair = (Map.Entry)it.next();
+                        String cmdToExecute = (String)pair.getKey();
+                        String inSeconds = (String)pair.getValue();
+                        int seconds = Integer.parseInt(inSeconds);
+                        System.out.println("time:" + new Date() + " " + cmdToExecute + " Seconds :" + seconds);
+                        executeCommand(cmdToExecute);
+
+                        try{
+                            Thread.sleep(seconds);
+                        }catch(Exception ee){
+                            ee.printStackTrace();
+                        }
+                    }
+                }
+                stillProcessing = false;
+
+            }
+        });
+
+        t.start();
+
+    }
+
+    public void executeCommand(String message){
         System.out.println("message: " + message);
         try {
             byte[] msgBuffer = message.getBytes("UTF-8");
             if (outStream!=null) {
-                Toast.makeText(this, "Sending..." + message, Toast.LENGTH_SHORT).show();
+                //
                 outStream.write(msgBuffer);
                 outStream.flush();
             }else{
-                Toast.makeText(this, "Please connect to a device...", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Please connect to a device...", Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             System.out.println("In onResume() and an exception occurred during write: " + e.getMessage());
@@ -280,6 +326,19 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void getup(View view){
+        Button b = (Button)view;
+        String buttonText = b.getText().toString();
+        if (buttonText!=null){
+            buttonText = buttonText.toLowerCase();
+            String dd = (String)sndMessage.get(buttonText);
+            if (dd!=null){
+                sendMessage(dd);
+            }
+        }
+    }
+
+    public void getupfromfall(View view){
+        lastCommand = "n";
         Button b = (Button)view;
         String buttonText = b.getText().toString();
         if (buttonText!=null){
@@ -533,6 +592,129 @@ public class MainActivity extends ActionBarActivity {
                 sendMessage(dd);
             }
         }
+    }
+
+    public LinkedHashMap<String,String> validCommands(String currentData)
+    {
+        LinkedHashMap<String,String> prData = new LinkedHashMap<String,String>();
+
+        if (currentData.equals(lastCommand))
+        {
+            return null;
+        }
+
+        if (currentData.equals("w") || currentData.equals("v"))
+        {
+            prData.clear();
+            //prData += currentData;
+            //prData += "@0";
+            prData.put(currentData, "0");
+
+            return prData;
+        }
+
+
+        if (lastCommand.equals("k") || lastCommand.equals("a") || lastCommand.equals("b") || lastCommand.equals("d") || lastCommand.equals("e") || lastCommand.equals("m") || lastCommand.equals("u") || lastCommand.equals("o") || lastCommand.equals("c") || lastCommand.equals("r") || lastCommand.equals("s") || lastCommand.equals("t"))
+        {
+
+            //welcome or salute or stay still or get up or stand up or fight or sit dance
+            //ignore push up, 1 hand push up
+            if (currentData.equals("p") || currentData.equals("q"))
+            {
+                //do the lay down first and then do this push up sequence
+                //prData = "n@8000";
+                prData.put("n", "8000");
+            }
+
+        }
+        else if (lastCommand.equals("f"))   // sitting
+        {
+
+            //only get up from sitting position is allowed
+            if (currentData.equals("d") || currentData.equals("m"))
+            {
+                //do get up from sitting position
+                //process("e", true);
+                //prData = "e@11000";
+                prData.put("e", "8000");
+            }
+            else if (currentData.equals("p") || currentData.equals("q"))
+            {
+                //do the get up first and then lay down and then push up sequence
+                //process("e", true);
+                //process("n", true);
+                //prData = "e@11000,n@8000";
+                prData.put("e", "11000");
+                prData.put("n", "8000");
+            }
+            else
+            {
+                //for others call get up from sitting position and then do
+                //process("e", true);
+                //prData = "e@11000";
+                prData.put("e", "11000");
+            }
+
+        }
+        else if (lastCommand.equals("g") || lastCommand.equals("h") || lastCommand.equals("i") || lastCommand.equals("j") || lastCommand.equals("l"))
+        {
+            // go left or walk or go right or left turn or right turn
+
+            if (currentData.equals("p") || currentData.equals("q" ))
+            {
+                //do the lay down first and then do this push up sequence
+                //process("n", true);
+                //prData = "n@8000";
+                prData.put("n", "8000");
+            }
+        }
+        else if (lastCommand.equals("n"))   //lay down
+        {
+
+            if (currentData.equals("p") || currentData.equals("q"))
+            {
+                //donot do any thing
+            }
+            else if (currentData.equals("m"))
+            {
+                // dont do any thing
+            }
+            else if (currentData.equals("e"))
+            {
+                currentData = "m";
+            }
+            else
+            {
+                //stand up and then do the rest
+                //process("m", true);
+                //prData = "m@24000";
+                prData.put("m", "24000");
+            }
+
+        }
+        else if (lastCommand.equals("p") || lastCommand.equals("q"))  //push ups or 1 hand push ups
+        {
+            if (currentData.equals("m"))
+            {
+                // dont do any thing
+            }
+            else if (currentData.equals("e"))
+            {
+                currentData = "m";
+            }
+            else
+            {
+                //stand up and then do the rest
+                //process("m", true);
+                //prData = "m@24000";
+                prData.put("m", "24000");
+            }
+        }
+
+        prData.put(currentData, "0");
+
+        lastCommand = currentData;
+        return prData;
     }
 
 }
