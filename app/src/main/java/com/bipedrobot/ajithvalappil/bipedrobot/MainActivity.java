@@ -1,11 +1,9 @@
 package com.bipedrobot.ajithvalappil.bipedrobot;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.*;
 import android.view.MenuItem;
 import android.widget.*;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,8 +25,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends ActionBarActivity {
+
+public class MainActivity extends AppCompatActivity {
 
     private Spinner spinner;
     static List<String> items = new ArrayList<String>();
